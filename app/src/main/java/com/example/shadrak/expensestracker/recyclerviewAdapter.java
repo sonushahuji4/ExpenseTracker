@@ -1,11 +1,13 @@
 package com.example.shadrak.expensestracker;
 
 import android.content.Context;
+import android.content.Intent;
 import android.net.Uri;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.RecyclerView.ViewHolder;
+import android.support.v7.widget.helper.ItemTouchHelper;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -24,30 +26,31 @@ class recyclerviewAdapter extends RecyclerView.Adapter<recyclerviewAdapter.ViewH
     private static ArrayList<newBill> list;
     newBill bill;
     int index;
+    Context context1;
 
-    public recyclerviewAdapter(bills_fragment bills_fragment, ArrayList<newBill> list) {
+    public recyclerviewAdapter(bills_fragment bills_fragment, ArrayList<newBill> list,Context context1)
+    {
         this.context = bills_fragment;
         this.list = list;
+        this.context1 = context1;
     }
 
     @NonNull
     @Override
-    public ViewHolder onCreateViewHolder(@NonNull ViewGroup viewGroup, int i) {
+    public ViewHolder onCreateViewHolder(@NonNull ViewGroup viewGroup, int i)
+    {
         View view;
         view = LayoutInflater.from(viewGroup.getContext()).inflate(R.layout.dataitems, viewGroup, false);
         return new ViewHolder(view);
     }
 
     @Override
-    public void onBindViewHolder(@NonNull ViewHolder viewHolder, int i) {
+    public void onBindViewHolder(@NonNull ViewHolder viewHolder, final int i)
+    {
         viewHolder.v_name.setText(list.get(i).getVendor());
         viewHolder.date.setText(list.get(i).getDate());
-//        viewHolder.category.setText(list.get(i).getCategory());
         viewHolder.cost.setText(list.get(i).getAmount());
 
-//        String link;
-//        link = list.get(i).getLink();
-//        viewHolder.icon.setImageURI(Uri.parse(link));
         bill = list.get(i);
         Glide.with(context).load(bill.getLink()).into(viewHolder.icon);
 
@@ -56,7 +59,22 @@ class recyclerviewAdapter extends RecyclerView.Adapter<recyclerviewAdapter.ViewH
         } else {
             viewHolder.verified.setImageResource(R.drawable.ic_verified_user);
         }
+        viewHolder.foreground.setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View v)
+            {
+                String bill_id = String.valueOf(list.get(i).getBillId());
+                Intent intent = new Intent(context1,BillFormEditActivity.class);
+                System.out.println("hdskjfh ieyroi:"+bill_id);
+                intent.putExtra("bill_id",bill_id);
+                context1.startActivity(intent);
+            }
+        });
+
     }
+
+
 
     @Override
     public int getItemCount() {
@@ -77,9 +95,10 @@ class recyclerviewAdapter extends RecyclerView.Adapter<recyclerviewAdapter.ViewH
 
         private TextView v_name, date, cost, place, category;
         private ImageView verified, icon;
-        public RelativeLayout background;
+//        public RelativeLayout background;
         public CardView foreground;
-        public FrameLayout frameLayout;
+//        public FrameLayout frameLayout;
+
 
         public ViewHolder(View view) {
             super(view);
@@ -89,9 +108,9 @@ class recyclerviewAdapter extends RecyclerView.Adapter<recyclerviewAdapter.ViewH
             cost = view.findViewById(R.id.cost);
             verified = view.findViewById(R.id.verified);
             icon = view.findViewById(R.id.bill_icon);
-            background = view.findViewById(R.id.view_background);
+//            background = view.findViewById(R.id.view_background);
             foreground = view.findViewById(R.id.view_foreground);
-            frameLayout = view.findViewById(R.id.framelayout);
+//            frameLayout = view.findViewById(R.id.framelayout);
 //            place = view.findViewById(R.id.place);
 //            category = view.findViewById(R.id.category);
 

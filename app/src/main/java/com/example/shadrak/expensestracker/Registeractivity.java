@@ -7,6 +7,7 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.tasks.OnCompleteListener;
@@ -22,11 +23,13 @@ import com.google.firebase.database.FirebaseDatabase;
 public class Registeractivity extends AppCompatActivity {
     EditText name, emailid, passwd, confirmpasswd;
     Button signup;
+    TextView loginlink;
     FirebaseAuth mFirebaseAuth;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        getSupportActionBar().hide(); //<< this
         setContentView(R.layout.activity_registeractivity);
 
         mFirebaseAuth = FirebaseAuth.getInstance();
@@ -34,7 +37,18 @@ public class Registeractivity extends AppCompatActivity {
         emailid = findViewById(R.id.editText5);
         passwd = findViewById(R.id.editText4);
         confirmpasswd = findViewById(R.id.editText6);
+        loginlink = findViewById(R.id.loginlink);
+
         signup = findViewById(R.id.button4);
+
+        loginlink.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent i = new Intent(Registeractivity.this, MainActivity.class);
+                startActivity(i);
+                finish();
+            }
+        });
         signup.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {

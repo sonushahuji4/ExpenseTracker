@@ -1,5 +1,6 @@
 package com.example.shadrak.expensestracker;
 
+import android.app.ProgressDialog;
 import android.content.Intent;
 import android.media.MediaPlayer;
 import android.support.annotation.NonNull;
@@ -9,6 +10,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.tasks.OnCompleteListener;
@@ -21,40 +23,41 @@ import com.google.firebase.database.FirebaseDatabase;
 
 public class MainActivity extends AppCompatActivity {
     EditText emailid, password;
-    Button login, register;
-    FirebaseAuth mFirebaseAuth;
-    private FirebaseAuth.AuthStateListener mAuthStateListener;
-    private String uid;
+    TextView register;
+    Button login;
+    private  FirebaseAuth mFirebaseAuth;
+
+    private ProgressDialog LoadingBar;
+    private ProgressDialog progressBar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        getSupportActionBar().hide(); //<< this
         setContentView(R.layout.activity_main);
-        Log.i("test","oncreate()");
+
+        LoadingBar = new ProgressDialog(this);
+
+        emailid = findViewById(R.id.emailid);
+        password = findViewById(R.id.password);
+        login = findViewById(R.id.btnlogin);
+
+        register = findViewById(R.id.edittextregisterlink);
+
         mFirebaseAuth = FirebaseAuth.getInstance();
-        emailid = findViewById(R.id.editText);
-        password = findViewById(R.id.editText2);
-        login = findViewById(R.id.button2);
-        register = findViewById(R.id.button3);
 
-        mAuthStateListener = new FirebaseAuth.AuthStateListener() {
-            @Override
-            public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
-                FirebaseUser mFirebaseUser = mFirebaseAuth.getCurrentUser();
-                if(mFirebaseUser != null) {
-                    Log.d("user", String.valueOf(mFirebaseUser));
-//                    Toast.makeText(MainActivity.this,"LogIn Successfull",Toast.LENGTH_SHORT).show();
-//                    Intent i = new Intent(MainActivity.this, Homeactivity.class);
-//                    startActivity(i);
-                } else {
-                    Toast.makeText(MainActivity.this,"Please Login!!",Toast.LENGTH_SHORT).show();
-                }
-            }
-        };
 
-        login.setOnClickListener(new View.OnClickListener() {
+
+        login.setOnClickListener(new View.OnClickListener()
+        {
             @Override
-            public void onClick(View view) {
+            public void onClick(View view)
+            {
+                showProgressBar();
+//                LoadingBar.setTitle("Loading...");
+//                LoadingBar.setMessage("Few seconds to go...");
+//                LoadingBar.show();
                 String email = emailid.getText().toString();
                 String pwd = password.getText().toString();
 
@@ -70,17 +73,32 @@ public class MainActivity extends AppCompatActivity {
                     mFirebaseAuth.signInWithEmailAndPassword(email, pwd).addOnCompleteListener(MainActivity.this, new OnCompleteListener<AuthResult>() {
                         @Override
                         public void onComplete(@NonNull Task<AuthResult> task) {
-                            if(!task.isSuccessful()) {
+                            if(!task.isSuccessful())
+                            {
                                 Toast.makeText(MainActivity.this,"Email/Password is incorrect",Toast.LENGTH_SHORT).show();
-                            } else {
-                                Toast.makeText(MainActivity.this,"Login Successfull!!",Toast.LENGTH_SHORT).show();
-//                                DatabaseReference mDatabase = FirebaseDatabase.getInstance().getReference();
+                            } else
+                                {
+                                    FirebaseUser user = mFirebaseAuth.getCurrentUser();
+                                    updateUI(user);
+
+                            }
+                        }
+
+                        private void updateUI(FirebaseUser user)
+                        {
+                            if (user != null)
+                            {
                                 Intent inToHome = new Intent(MainActivity.this, Homeactivity.class);
-                                FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
-                                uid = user.getUid();
-                                inToHome.putExtra("uid",uid);
+                                //inToHome.putExtra("uid",uid);
                                 startActivity(inToHome);
                                 finish();
+                                hideProgress();
+
+                            } else
+                                {
+                                    Intent inToHome = new Intent(MainActivity.this, MainActivity.class);
+                                    startActivity(inToHome);
+                                    finish();
                             }
                         }
                     });
@@ -98,13 +116,17 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    @Override
-    protected void onStart() {
-        super.onStart();
-        mFirebaseAuth.addAuthStateListener(mAuthStateListener);
+    private void showProgressBar(){
+
+        progressBar = new ProgressDialog(this);
+        progressBar.setMessage("Loading...");
+        progressBar.show();
     }
 
-    public String getUid(){
-        return uid;
+    private void hideProgress(){
+        if(progressBar!=null && progressBar.isShowing()){
+            progressBar.hide();
+        }
     }
+
 }

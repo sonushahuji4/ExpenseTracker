@@ -206,6 +206,7 @@ public class formpopup extends Activity {
                 location = place.getText().toString();
                 costprice = amount.getText().toString();
                 date = edit_date.getText().toString();
+                //String bill_id = data.getKey();
 
                 //get userid
                 Random r = new Random();
@@ -213,7 +214,7 @@ public class formpopup extends Activity {
 
                 childref = rootref.child("Bills");
 
-                childref.child(uid).child(String.valueOf(billid)).setValue(new newBill(costprice, date, location, vendorname, Category, "not verified", "NULL", "NULL"));
+                childref.child(uid).child(String.valueOf(billid)).setValue(new newBill("4",costprice, date, location, vendorname, Category, "not verified", "NULL", "NULL"));
                 Toast.makeText(getApplicationContext(),"Submitted",Toast.LENGTH_SHORT).show();
 //                uploadImage(billid);
                 finish();

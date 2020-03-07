@@ -71,7 +71,7 @@ public class Homeactivity extends AppCompatActivity {
 
         Bundle bundle = getIntent().getExtras();
         assert bundle != null;
-        uid = bundle.getString("uid");
+//        uid = bundle.getString("uid");
 
         Bundle bund = new Bundle();
         bund.putString("userid", uid);

@@ -5,7 +5,6 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:orientation="vertical"
     android:fillViewport="true"
-    android:background="#3badfc"
     android:id="@+id/bills_fragment"
     tools:context=".bills_fragment">
 
@@ -14,7 +13,7 @@
         android:layout_width="match_parent"
         android:scrollbars="vertical"
         android:layout_height="fill_parent"
-        android:background="#b3bcef">
+        android:background="#F2F4F4">
 
     </android.support.v7.widget.RecyclerView>
 

@@ -4,6 +4,7 @@ import static com.google.android.gms.common.internal.safeparcel.SafeParcelable.N
 
 public class newBill {
 
+    private String BillId;
     private String Amount;
     private String Date;
     private String Place;
@@ -13,7 +14,8 @@ public class newBill {
     private String Link = NULL;
     private String Items = NULL;
 
-    public newBill(String amount, String date, String place, String vendor, String category, String status, String link, String items) {
+    public newBill(String billId,String amount, String date, String place, String vendor, String category, String status, String link, String items) {
+        this.BillId = billId;
         this.Amount = amount;
         this.Date = date;
         this.Place = place;
@@ -26,6 +28,7 @@ public class newBill {
 
     //Getter
 
+    public  String getBillId(){ return BillId;}
     public String getVendor() {
         return Vendor;
     }
@@ -52,6 +55,7 @@ public class newBill {
 
     //Setter
 
+    public void setBillId(String billId){ BillId = billId;}
     public void setVendor(String name) {
         Vendor = name;
     }

@@ -41,18 +41,19 @@ import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
-
-public class bills_fragment extends Fragment implements RecyclerItemTouchHelper.RecyclerItemTouchHelperListener {
+//public class bills_fragment extends Fragment implements RecyclerItemTouchHelper.RecyclerItemTouchHelperListener
+public class bills_fragment extends Fragment implements RecyclerItemTouchHelper.RecyclerItemTouchHelperListener{
 
     RecyclerView recyclerView;
     RecyclerView.LayoutManager layoutManager;
     recyclerviewAdapter adapter;         //recyclerviewAdapter class
-    DatabaseReference rootref;         //firebase connections
+    DatabaseReference rootref;//firebase connections
 //    private FirebaseRecyclerAdapter<newBill, MyViewHolder> firebaseRecyclerAdapter;        //firebase connections
     ArrayList<newBill> list;
-    String amount, date, place, vendor, category, status, link, items;
+    String amount, date, place, vendor, category, status, link, items, bill_id;
     FirebaseAuth firebaseAuth;
     FirebaseUser user;
+    FirebaseDatabase firebaseDatabase;
     String userId;
     ImageView verified, icon;
     LinearLayout bills_fragment;
@@ -67,6 +68,25 @@ public class bills_fragment extends Fragment implements RecyclerItemTouchHelper.
     public View onCreateView(@Nullable LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 
         View rootview = inflater.inflate(R.layout.bills_fragment, container, false);
+        recyclerView = rootview.findViewById(R.id.bills_recyclerview);
+        adapter = new recyclerviewAdapter(this, list,getContext());
+        layoutManager = new LinearLayoutManager(getActivity());
+        recyclerView.setLayoutManager(layoutManager);
+        recyclerView.setAdapter(adapter);
+
+        ItemTouchHelper.SimpleCallback itemTouchHelperCallback = new RecyclerItemTouchHelper(0, ItemTouchHelper.RIGHT, this);
+        new ItemTouchHelper(itemTouchHelperCallback).attachToRecyclerView(recyclerView);
+
+
+        return rootview;
+
+    }
+
+
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState)
+    {
+        super.onCreate(savedInstanceState);
 
         firebaseAuth = FirebaseAuth.getInstance();
         user = firebaseAuth.getCurrentUser();
@@ -74,76 +94,12 @@ public class bills_fragment extends Fragment implements RecyclerItemTouchHelper.
 
         list = new ArrayList<>();
 
-        verified = (ImageView) rootview.findViewById(R.id.verified);
-        icon = (ImageView) rootview.findViewById(R.id.bill_icon);
-
-//        icon.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View view) {
-//                Toast.makeText(getActivity(),"icon link",Toast.LENGTH_SHORT).show();
-//            }
-//        });
-
-        //Recyclerview
-        recyclerView = rootview.findViewById(R.id.bills_recyclerview);
-        bills_fragment = rootview.findViewById(R.id.bills_fragment);
-//        recyclerView.hasFixedSize();
-
+//        ItemTouchHelper.SimpleCallback itemTouchHelperCallback = new RecyclerItemTouchHelper(0, ItemTouchHelper.RIGHT, this);
+//        new ItemTouchHelper(itemTouchHelperCallback).attachToRecyclerView(recyclerView);
+//        populate_list(userId);
         populate_list(userId);
 
-        rootref = FirebaseDatabase.getInstance().getReference();
-        Query query = rootref.child("Bills").child(userId);
 
-        layoutManager = new LinearLayoutManager(getActivity());
-        recyclerView.setLayoutManager(layoutManager);
-        adapter = new recyclerviewAdapter(this, list);
-        recyclerView.setAdapter(adapter);
-        recyclerView.addOnItemTouchListener(new RecyclerItemClickListener(getContext(), recyclerView, new RecyclerItemClickListener.ClickListener() {
-            @Override
-            public void onItemClick(View view, int position) {
-                Toast.makeText(getContext(), "clicked",Toast.LENGTH_SHORT).show();
-                Intent i = new Intent(getActivity(), formpopup.class);
-//                i.putExtra("uid",uid);
-                startActivity(i);
-            }
-
-            @Override
-            public void onLongItemClick(View view, int position) {
-                Toast.makeText(getContext(), "lamba clicked",Toast.LENGTH_SHORT).show();
-            }
-        }));
-
-//        ItemTouchHelper.SimpleCallback simpleCallback = new ItemTouchHelper.SimpleCallback(0,
-//                ItemTouchHelper.LEFT | ItemTouchHelper.RIGHT) {
-//            @Override
-//            public boolean onMove(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder, @NonNull RecyclerView.ViewHolder target) {
-//                final int fromPos = viewHolder.getAdapterPosition();
-//                final int toPos = target.getAdapterPosition();
-//                return false;
-//            }
-//
-//            @Override
-//            public void onSwiped(@NonNull RecyclerView.ViewHolder viewHolder, int i) {
-//                Toast.makeText(getActivity(),"Swiped",Toast.LENGTH_SHORT).show();
-//            }
-//
-//            @Override
-//            public void onChildDraw(Canvas c, RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder, float dX, float dY, int actionState, boolean isCurrentlyActive) {
-//                // view the background view
-//            }
-//        };
-//
-//        ItemTouchHelper itemTouchHelper = new ItemTouchHelper(simpleCallback);
-//        itemTouchHelper.attachToRecyclerView(recyclerView);
-
-        ItemTouchHelper.SimpleCallback itemTouchHelperCallback = new RecyclerItemTouchHelper(0, ItemTouchHelper.LEFT, this);
-        new ItemTouchHelper(itemTouchHelperCallback).attachToRecyclerView(recyclerView);
-
-
-
-
-
-        return rootview;
     }
 
     private void populate_list(String userId) {
@@ -165,10 +121,9 @@ public class bills_fragment extends Fragment implements RecyclerItemTouchHelper.
                     status = data.child("status").getValue().toString();
                     link = data.child("link").getValue().toString();
                     items = data.child("items").getValue().toString();
+                    bill_id = data.getKey();
 
-                    Log.d("values","values "+ amount + " " + date + " " + place + " " + vendor + " " + category + " " + status + " " + link + " " +items);
-
-                    list.add(new newBill(amount, date, place, vendor, category, status, link, items));
+                    list.add(new newBill(bill_id,amount, date, place, vendor, category, status, link, items));
 
                     adapter.notifyDataSetChanged();
                 }
@@ -183,31 +138,25 @@ public class bills_fragment extends Fragment implements RecyclerItemTouchHelper.
     }
 
     @Override
-    public void onSwiped(RecyclerView.ViewHolder viewHolder, int direction, int position) {
-        if (viewHolder instanceof recyclerviewAdapter.ViewHolder) {
-            // get the removed item name to display it in snack bar
-//            String name = list.get(viewHolder.getAdapterPosition()).getName();
-
-            // backup of removed item for undo purpose
-            final newBill deletedItem = list.get(viewHolder.getAdapterPosition());
-            final int deletedIndex = viewHolder.getAdapterPosition();
+    public void onSwiped(RecyclerView.ViewHolder viewHolder, int direction, int position)
+    {
+        if (viewHolder instanceof recyclerviewAdapter.ViewHolder)
+        {
+            String bill_id = list.get(position).getBillId();
+//            final newBill deletedItem = list.get(viewHolder.getAdapterPosition());
+//            final int deletedIndex = viewHolder.getAdapterPosition();
 
             // remove the item from recycler view
             recyclerviewAdapter.removeItem(viewHolder.getAdapterPosition());
 
-            // showing snack bar with Undo option
-            Snackbar snackbar = Snackbar
-                    .make(bills_fragment, " removed from cart!", Snackbar.LENGTH_LONG);
-            snackbar.setAction("UNDO", new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
 
-                    // undo is selected, restore the deleted item
-                    recyclerviewAdapter.restoreItem(deletedItem, deletedIndex);
-                }
-            });
-            snackbar.setActionTextColor(Color.YELLOW);
-            snackbar.show();
+            firebaseAuth = FirebaseAuth.getInstance();
+            user = firebaseAuth.getCurrentUser();
+            String userID = user.getUid();
+            firebaseDatabase = FirebaseDatabase.getInstance();
+            DatabaseReference databaseReference = firebaseDatabase.getReference().child("Bills").child(userID).child(bill_id);
+            databaseReference.removeValue();
+
         }
     }
 }
